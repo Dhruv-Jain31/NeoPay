@@ -3,8 +3,8 @@ const zod = require("zod");
 const { User } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
-const { lstat } = require("fs");
-const { loadavg } = require("os");
+
+const router = express.Router();
 
 const signupBody = zod.object({
     username: zod.string().email(),
@@ -27,7 +27,7 @@ router.post("/signup", async (req,res) => {
     const password = response.password;
 
     const existingUser = await User.findOne({
-        username: req.body.username
+        username: username,
     })
 
     if(existingUser){
@@ -55,8 +55,54 @@ router.post("/signup", async (req,res) => {
 
 })
 
+const signinBody = zod.object({
+    username: zod.string().email(),
+    password: zod.string()
+})
 
+router.post('/signin', async(req,res) => {
+    const validation = signinBody.safeParse(req.body);
+    if(!validation.success){
+        return res.status(411).json({
+            message: "Validation error / Incorrect Inputs",
+            error: validation.error,
+        })
+    }
 
-const router = express.Router();
+    const response = validation.data;
+    const username = response.username;
+    const password = response.password;
+
+    const User = await User.findOne({
+        username: req.body.username,
+        password: req.body.password,
+    })
+
+    if (User.username !== username){
+        return res.status(500).json({
+            "msg" : "Incorrect Username"
+        })
+    }
+
+    else if (User.password !== password){
+        return res.status(500).json({
+            "msg" : "Incorrect password"
+        })
+    }
+
+    else{
+        const token = jwt.sign({
+            username,
+            password
+        }, JWT_SECRET);
+
+        res.json({
+            "msg" : "User sign in successful",
+            "token" : "Bearer" + " " + token
+        })
+        return;
+    }
+
+})
 
 module.exports = router;
