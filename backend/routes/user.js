@@ -132,4 +132,44 @@ router.put("/", authMiddleware, async(req,res) => {
     }
 })
 
+// route to get all the users that exist in Db currently
+router.get("/bulk", async(req,res) => {
+    const filter = req.query.filter || "";
+    //This accesses the filter property of the query object.
+   //If the URL contains a query parameter named filter (e.g., /bulk?filter=john),
+   //req.query.filter will hold the value of this parameter ('john' in this case).
+
+   // if req,query is a falsy value or undefined then const filter will give a empty string
+   /*Query Parameter Provided:
+Request URL: /bulk?filter=john
+req.query: { filter: 'john' }
+req.query.filter: 'john'
+filter: 'john' (since req.query.filter is truthy)
+Query Parameter Not Provided:
+
+Request URL: /bulk
+req.query: {}
+req.query.filter: undefined
+filter: "" (since req.query.filter is falsy, the default value "" is used)
+}) */
+
+     const user = await User.find({
+        $or: [
+            {
+                firstName: {"$regex":filter}  // regex is used to match the substring.
+            },
+            {
+                lastName: {"$regex":filter}
+            }
+        ]
+     })
+     res.json({
+        user: users.map(user => ({
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id
+        }))
+     })
+})
 module.exports = router;
