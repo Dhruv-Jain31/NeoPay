@@ -1,8 +1,10 @@
 const express = require("express");
 const zod = require("zod");
+const bcrypt = require("bcrypt")
 const { User } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
+const { authMiddleware } = require("../middleware");
 
 const router = express.Router();
 
@@ -36,9 +38,11 @@ router.post("/signup", async (req,res) => {
         })
     }
 
+    const hashed_password = await bcrypt.hash(password);
+
     const user = await User.create({
         username: response.username,
-        password: response.password,
+        password: hashed_password,
         firstName: response.firstName,
         lastName: response.lastName,
     })
@@ -84,25 +88,48 @@ router.post('/signin', async(req,res) => {
         })
     }
 
-    else if (User.password !== password){
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid){
         return res.status(500).json({
             "msg" : "Incorrect password"
         })
     }
 
-    else{
-        const token = jwt.sign({
-            username,
-            password
+
+    const token = jwt.sign({
+            userId: user._id
         }, JWT_SECRET);
 
-        res.json({
+    res.json({
             "msg" : "User sign in successful",
             "token" : "Bearer" + " " + token
         })
         return;
-    }
+})
 
+const updateBody = zod.object({
+    password: zod.string().min(6).optional(),
+    firstName: zod.string().min(3).optional(),
+    lastName: zod.string().optional()
+})
+
+router.put("/", authMiddleware, async(req,res) => {
+    const { success } = zod.safeParse(req.body)
+    if (!success){
+        return res.status(411).json({
+            message: "Error while updating information"
+        })
+    }
+    try{
+        await User.updateOne({_id: req.userId},req.body);
+    }
+    catch(error){
+        res.status(500).json({
+            message: "Error in updating the information",
+            error: error.message
+        })
+    }
 })
 
 module.exports = router;

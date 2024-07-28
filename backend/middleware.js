@@ -15,10 +15,8 @@ const authMiddleware = (req,res,next) => {
         const decodedValue = jwt.verify(jwtToken, JWT_SECRET);
         console.log(decodedValue)
 
-        if(req.userId = decoded.userId && decodedValue.username && decodedValue.password){
+        if(req.userId == decoded.userId){
             req.userId = decodedValue.userId
-            req.username = decodedValue.username
-            req.password = decodedValue.password
             next();
         }
         else{
