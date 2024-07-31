@@ -48,6 +48,11 @@ router.post("/signup", async (req,res) => {
     })
     const userId = user._id; //made by the database itself
 
+    await Account.create({
+        userId,
+        balance: 1 + Math.random() * 10000,
+    })
+
     const token = jwt.sign({
         userId
     }, JWT_SECRET);
