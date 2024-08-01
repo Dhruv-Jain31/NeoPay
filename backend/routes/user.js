@@ -60,7 +60,7 @@ router.post("/signup", async (req, res) => {
     {
       userId,
     },
-    process.env.JWT_SECRET
+    JWT_SECRET
   );
 
   res.status(200).json({
@@ -102,7 +102,7 @@ router.post("/signin", async (req, res) => {
       {
         userId: user._id,
       },
-      process.env.JWT_SECRET
+      JWT_SECRET
     );
 
     res.status(200).json({
@@ -132,6 +132,8 @@ router.put("/", authMiddleware, async (req, res) => {
 
   res.json({
     message: "Updated successfully",
+    firstName: req.firstName,
+    lastName: req.lastName,
   });
 });
 
