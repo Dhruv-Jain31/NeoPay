@@ -17,7 +17,8 @@ router.get("/balance", authMiddleware, async (req, res) => {
 
 router.post("/transfer", authMiddleware, async (req, res) => {
   const session = await mongoose.startSession();
-  session.startTransaction();
+  session.startTransaction();  // from this part we'll perform some important transactions in the Db
+  // either all must occur or none must occur. It should not be in a hung state
 
   const { amount, to } = req.body;
 

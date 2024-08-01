@@ -1,16 +1,5 @@
 const mongoose = require("mongoose");
 
-const connectToMongo = async () => {
-  try {
-      await mongoose.connect("mongodb+srv://dhruv:<password>@cluster0.l51ferf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/Users", { useNewUrlParser: true });
-      console.log("connected to MongoDB")
-  }
-  catch(error){
-      console.log("error connection to MongoDB:", error.message)
-  }
-};
-
-
 const userSchema = new mongoose.Schema({
   username: {
     type: String,

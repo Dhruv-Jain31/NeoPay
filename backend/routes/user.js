@@ -34,6 +34,7 @@ router.post("/signup", async (req, res) => {
     });
   }
 
+
   const { username, firstName, lastName, password } = req.body;
 
   const salt = await bcrypt.genSalt(10);
@@ -94,7 +95,7 @@ router.post("/signin", async (req, res) => {
   if (user) {
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
-      return res.status(401).json("Wrong credentials!");
+      return res.status(401).json("Wrong password");
     }
 
     const token = jwt.sign(
@@ -143,12 +144,12 @@ router.get("/bulk", async (req, res) => {
     $or: [
       {
         firstName: {
-          $regex: filter,
+          $regex: filter, $options: i,
         },
       },
       {
         lastName: {
-          $regex: filter,
+          $regex: filter, $options: i,
         },
       },
     ],
