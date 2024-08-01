@@ -1,55 +1,72 @@
 const express = require("express");
 const { authMiddleware } = require("../middleware");
-const { Account } = require ("../db")
+const { Account } = require("../db");
+const mongoose = require("mongoose");
+
 const router = express.Router();
 
-router.get("/balance", authMiddleware, async (req,res) => {
-    const account = await Account.findOne({
-        userId: req.userId,
+router.get("/balance", authMiddleware, async (req, res) => {
+  const account = await Account.findOne({
+    userId: req.userId,
+  });
+
+  res.json({
+    balance: account.balance,
+  });
+});
+
+router.post("/transfer", authMiddleware, async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  const { amount, to } = req.body;
+
+  // Don't allow transfer to oneself
+  if (to === req.userId) {
+    await session.abortTransaction();
+    return res.json({ message: "Cannot Transfer to yourself!" });
+  }
+
+  // Fetch the accounts within transaction
+  const account = await Account.findOne({
+    userId: req.userId,
+  }).session(session);
+
+  if (!account || account.balance < amount) {
+    await session.abortTransaction();
+    return res.status(400).json({
+      message: "Insufficient balance",
     });
+  }
 
-    res.json({
-        balance: account.balance,
-    })
-})
+  // Fetch the accounts within transaction
+  const toAccount = await Account.findOne({
+    userId: to,
+  }).session(session);
 
-router.post("/transfer", authMiddleware, async (req,res) => {
-    const session = await mongoose.startSession(); // means we are doing bunch of things together
-    //in the database and if any one fails, revert everything
+  if (!toAccount) {
+    await session.abortTransaction();
+    return res.status(400).json({
+      message: "Invalid account",
+    });
+  }
 
-    session.startTransaction();
-    const { amount, receiver } = req.body;
+  // Perform the transfer within transaction
+  await Account.updateOne(
+    { userId: req.userId },
+    { $inc: { balance: -amount } }
+  ).session(session);
+  await Account.updateOne(
+    { userId: to },
+    { $inc: { balance: amount } }
+  ).session(session);
 
-    //fetch the accounts within the transaction
-    const account = await Account.findOne({
-        userId: req.userId,
-    }).session(session);
+  // Commit Transaction
+  await session.commitTransaction();
 
-    if (!account || account.balance < amount){
-        await session.abortTransaction();
-        return res.status(400).json({
-            message: "Insufficient Balance"
-        });
-    }
+  res.json({
+    message: "Transfer successful",
+  });
+});
 
-    const toAccount = await Account.findOne({
-        userId: receiver,
-    }).session(session);
-
-    if(!toAccount){
-        await session.abortTransaction();
-        return res.status(400).json({
-            message: "Invalid account"
-        });
-    }
-
-    //performing the transfer
-    await Account.updateOne({ userId: req.userId }, { $inc: { balance: -amount} }).session(session);
-    await Account.updateOne({ userId: receiver }, { $inc: { balance: amount} }).session(session);
-
-    //commit the transaction
-    await session.commitTransaction();
-    res.json({
-        message: `Transfer of ${amount} successful`
-    })
-})
+module.exports = router;

@@ -1,36 +1,34 @@
-const jwt = require("jsonwebtoken")
-const { JWT_SECRET } = require("./config")
+const jwt = require("jsonwebtoken");
 
-const authMiddleware = (req,res,next) => {
-    const token = req.headers.authorization;
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-    if(!token || !token.startsWith('Bearer')){
-        return res.status(403).json({
-            msg: "Invalid token format"
-        })
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(403).json({
+      message: "Invalid auth header",
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.userId) {
+      req.userId = decoded.userId;
+      next();
+    } else {
+      return res.status(403).json({
+        message: "Invalid auth header",
+      });
     }
+  } catch (err) {
+    return res.status(403).json({
+      message: "Invalid auth header",
+    });
+  }
+};
 
-    const jwtToken = token.spilt(' ')[1];
-    try{
-        const decodedValue = jwt.verify(jwtToken, JWT_SECRET);
-        console.log(decodedValue)
-
-        if(decodedValue.userId){
-            req.userId = decodedValue.userId
-            next();
-        }
-        else{
-            res.status(403).json({
-                msg: "User doesn't exists"
-            })
-        }
-    }
-    catch(err){
-        return res.status(403).json({
-            msg: "Unauthorized user",
-            error: err.message
-        })
-    }
-}
-
-module.exports = authMiddleware
+module.exports = {
+  authMiddleware,
+};

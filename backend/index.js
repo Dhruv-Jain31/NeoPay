@@ -1,15 +1,28 @@
-const express = require('express');
+const express = require("express");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const mainRouter = require("./routes/index");
 const cors = require("cors");
-const mainRouter = require("./routes/index")
 
 const app = express();
-
-app.use(cors());
+dotenv.config();
 
 app.use(express.json());
+app.use(cors());
 
-app.use("/api/v1", mainRouter); // routes all requests coming to api/ to mainRouter
+app.use("/api/v1", mainRouter);
 
-app.listen(5600, function(){
-    console.log(`Neopay is running on localhost:5600`);
-})
+// /api/v1/user/signup
+// /api/v1/user/signin
+// /api/v1/user/changePassword.....
+
+// /api/v1/account/transferMoney
+// /api/v1/account/balance
+
+app.get("/", (req, res) => {
+  res.json("Server is up and running");
+});
+
+app.listen(process.env.PORT, () => {
+  console.log("Server is running on port: " + process.env.PORT);
+});
