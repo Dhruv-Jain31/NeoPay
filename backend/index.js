@@ -21,11 +21,12 @@ app.use("/api/v1", mainRouter);
 
 const connectToMongo = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URL);
-        console.log("connected to MongoDB")
-    }
-    catch(error){
-        console.log("error connection to MongoDB:", error.message)
+      await mongoose.connect(process.env.MONGO_URL, {
+        useNewUrlParser: true,
+      });
+      console.log("Connected to MongoDB");
+    } catch (error) {
+      console.log("Error connecting to MongoDB:", error.message);
     }
   };
 
@@ -34,5 +35,6 @@ app.get("/", (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
+    connectToMongo();
   console.log("Server is running on port: " + process.env.PORT);
 });
