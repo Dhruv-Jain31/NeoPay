@@ -53,8 +53,8 @@ const SendMoney = () => {
                                     placeholder="Enter amount"
                                 />
                             </div>
-                            <button onClick={() =>{
-                                axios.post("http://localhost:3000/api/v1/account/transfer",{
+                            <button onClick={async () =>{
+                                const response = await axios.post("http://localhost:3000/api/v1/account/transfer",{
                                     to: id,
                                     amount
                                 },{
@@ -64,7 +64,7 @@ const SendMoney = () => {
                                     },
                                 })
                                 // console.log(res.data.message);
-                                navigate("/paymentstatus?message=" + res?.data.message);
+                                navigate("/paymentstatus?message=" + response.data.message);
                             }} className="justify-center rounded-md text-sm font-medium ring-offset-background transition-colors h-10 px-4 py-2 w-full bg-blue-500 hover:bg-sky-700 text-white">
                                 Initiate Transfer
                             </button>
