@@ -147,12 +147,12 @@ router.get("/bulk", async (req, res) => {
     $or: [
       {
         firstName: {
-          $regex: filter, $options: i,
+          $regex: filter, $options: "i",
         },
       },
       {
         lastName: {
-          $regex: filter, $options: i,
+          $regex: filter, $options: "i",
         },
       },
     ],
