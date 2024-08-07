@@ -6,6 +6,7 @@ const Signin = lazy(() => import('./pages/Signin'));
 const Signup = lazy(() => import('./pages/Signup'));
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SendMoney = lazy(() => import('./pages/SendMoney'))
+const PaymentStatus = lazy(() => import('./pages/PaymentStatus'))
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/signup" element={<Suspense fallback={"loading..."}><Signup /></Suspense>} />
           <Route path="/dashboard" element={<Suspense fallback={"loading..."}><Dashboard /></Suspense>} />
           <Route path="/sendmoney" element={<Suspense fallback={"loading..."}><SendMoney /></Suspense>} />
+          <Route path="/paymentstatus" element={<Suspense fallback={"loading..."}><PaymentStatus /></Suspense>} />
         </Routes>
       </BrowserRouter>
     </Fragment>
