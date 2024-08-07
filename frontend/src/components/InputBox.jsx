@@ -6,7 +6,7 @@ export function InputBox({ label, placeholder, onChange, type = "text" }) {
             </div>
             <input
                 type={type}
-                onChange={onChange}
+                onChange={onChange} // it will call the parents on change function
                 placeholder={placeholder}
                 className="w-full px-2 py-1 border rounded border-slate-200"
             />
